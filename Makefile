@@ -1,11 +1,10 @@
 CXX     = g++
-CFLAGS	= -g
-LDFLAGS	=
-LIBS    =
+CFLAGS	= -O $(shell pkg-config --cflags Magick++)
+LIBS    = $(shell pkg-config --libs Magick++)
 TARGETS	= tty2gif
 
 tty2gif: tty2gif.cpp
-	${CXX} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LIBS}
+	${CXX} ${CFLAGS} -o $@ $^ ${LIBS}
 
 clean:
 	rm -f ${TARGETS}
