@@ -31,9 +31,29 @@
         <h1>
 <a name="intro" class="anchor" href="#intro"><span class="octicon octicon-link"></span></a>Intro</h1>
 
-<p>tty2gif let you record scripts and their outputs into both binary and
-gif formats. I only tested it on Linux with Bash. Feel free to report
-any bugs or port it into other systems, like BSD.</p>
+<p><code>tty2gif</code> let you record scripts and their outputs into both binary and
+gif formats.  </p>
+
+<p>Just like the original <code>script</code>, <code>tty2gif</code> first pomp up a temporary
+shell where you can type in your shell commands. Meanwhile, <code>tty2gif</code>
+will record both your inputs, and the output results. When you finish
+recording, just execute <code>exit</code> in the temporary terminal. Finally,
+<code>tty2gif</code> will store all above information into a binary file, named
+<code>file.raw</code>. If you provide the second argument, named <code>out.gif</code>,
+<code>tty2gif</code> will replay recorded process, and convert the it into a gif
+animation.</p>
+
+<p><code>tty2gif</code> also can be used to convert an exist binary file into a gif
+animation. Just feed it with an exist binary file name as the first
+argument, and the output gif file name as the second argument.</p>
+
+<p>Unlike other implementations, <code>tty2gif</code> provides a uniform solution
+with a single simple C/C++ source file. I only tested it on Linux with
+Bash. Feel free to report any bugs or port it into other systems, like
+BSD based systems.</p>
+
+<p>The <code>script</code> function part is inspired by the code in the book:
+<a href="http://www.man7.org/tlpi/">The Linux Programming Interface</a></p>
 
 <h1>
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h1>
@@ -41,15 +61,15 @@ any bugs or port it into other systems, like BSD.</p>
 <div class="highlight"><pre><span class="nv">$ </span>./tty2gif file.raw <span class="o">[</span>out.gif<span class="o">]</span> <span class="o">[</span>delay<span class="o">(</span>ms<span class="o">)]</span>
 </pre></div>
 
-<p>file.raw: output OR an exist binary script<br>
-out.gif: output gif animation<br>
+<p>file.raw: output binary file name <code>OR</code> an exist binary script<br>
+out.gif: output gif animation file name<br>
 delay: change speed in milliseconds for gif, e.x., +10 or -10</p>
 
 <h1>
 <a name="install" class="anchor" href="#install"><span class="octicon octicon-link"></span></a>Install</h1>
 
-<p>tty2gif depends on the Magick++ library.<br>
-After that, just `make'</p>
+<p><code>tty2gif</code> depends on the Magick++ library.<br>
+After that, just <code>make</code></p>
 
 <h1>
 <a name="demo" class="anchor" href="#demo"><span class="octicon octicon-link"></span></a>Demo</h1>
