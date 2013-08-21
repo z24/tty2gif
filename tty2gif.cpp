@@ -20,15 +20,20 @@ public:
     }
     ~TFile()
     {
+        Close();
+    }
+
+    void Close()
+    {
         if(Handle>=0)
         {
             close(Handle);
             Handle = -1;
         }
     }
-
     bool Open(const char *fileName,int opt=O_RDONLY,int mode=S_IRUSR|S_IWUSR)
     {
+        Close();
         Handle = open(fileName,opt,mode);
         return Handle>=0;
     }
@@ -41,44 +46,57 @@ struct TCmdInfo
 };
 //------------------------------------------------------------------------------
 #define BUFLEN 4096
-TFile master,slaver,file;
+TFile master,slave,file;
+struct termios rawt,orgt;
+struct winsize ws;
+//------------------------------------------------------------------------------
+void TermReset()
+{
+    assert(tcsetattr(STDIN_FILENO,TCSANOW,&orgt)!=-1);
+}
 //------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
-    assert(master.Open("/dev/ptmx",O_RDWR|O_NOCTTY));
-    grantpt(master.Handle);
-    unlockpt(master.Handle);
-    assert(slaver.Open(ptsname(master.Handle),O_RDWR));
-    
+    // save current term attributes
+    assert(tcgetattr(STDIN_FILENO,&orgt)!=-1); // term mode
+    assert(ioctl(STDIN_FILENO,TIOCGWINSZ,&ws)>=0); // term size
+
+    assert(master.Open("/dev/ptmx",O_RDWR|O_NOCTTY)); // open master
+    grantpt(master.Handle); // grant access to slave
+    unlockpt(master.Handle); // unlock slave
+
     int pid = fork();
     assert(pid>=0);
     
     if(pid==0) // open a shell in child
     {
+        assert(slave.Open(ptsname(master.Handle),O_RDWR)); // open slave
+        assert(tcsetattr(slave.Handle,TCSANOW,&orgt)!=-1);
+        assert(ioctl(slave.Handle,TIOCSWINSZ,&ws)!= -1);
+ 
+        // start a new session
         assert(setsid()!=-1);
-        // assert(ioctl(slaver.Handle,TIOCSCTTY,0)!=-1);
         // redirect stdin/out/err to salver
-        assert(dup2(slaver.Handle,STDIN_FILENO)  == STDIN_FILENO);
-        assert(dup2(slaver.Handle,STDOUT_FILENO) == STDOUT_FILENO);
-        assert(dup2(slaver.Handle,STDERR_FILENO) == STDERR_FILENO);
+        assert(dup2(slave.Handle,STDIN_FILENO)  == STDIN_FILENO);
+        assert(dup2(slave.Handle,STDOUT_FILENO) == STDOUT_FILENO);
+        assert(dup2(slave.Handle,STDERR_FILENO) == STDERR_FILENO);
         // open a shell
         const char *sh = getenv("SHELL");
         if(sh==NULL || *sh==0)
             sh = "/bin/sh";
         execlp(sh,sh,NULL);
-        exit(1);
+        assert(1);
     }
 
-    assert(file.Open("test",O_CREAT|O_RDWR));
+    assert(file.Open("test",O_CREAT|O_WRONLY|O_TRUNC)); // open output
 
     char   buff[BUFLEN];
     int    num;
     fd_set fds;
 
-    struct termios rt,ot;
-    assert(tcgetattr(STDIN_FILENO,&ot)!=-1);
-    cfmakeraw(&rt);
-    assert(tcsetattr(STDIN_FILENO,TCSAFLUSH,&rt)!=-1);
+    cfmakeraw(&rawt); // build a raw term attrib
+    assert(tcsetattr(STDIN_FILENO,TCSAFLUSH,&rawt)!=-1); // raw mode
+    assert(atexit(TermReset)==0); // restore mode at exit
 
     while(1)
     {
@@ -94,6 +112,7 @@ int main(int argc, char *argv[])
             num = read(STDIN_FILENO,buff,BUFLEN);
             if(num<=0)
                 break;
+            
             assert( write(master.Handle,buff,num) == num );
         }
         // pty -> stdout+file
@@ -102,17 +121,18 @@ int main(int argc, char *argv[])
             num = read(master.Handle,buff,BUFLEN);
             if(num<=0)
                 break;
+
             assert( write(STDOUT_FILENO,buff,num) == num );
             
             TCmdInfo info;
             info.time = time(NULL);
             info.len  = num;
+            
             assert( write(file.Handle,&info,sizeof(info)) == sizeof(info) );
             assert( write(file.Handle,buff,num) == num );
          }
     }
 
-    assert(tcsetattr(STDIN_FILENO,TCSAFLUSH,&ot)!=-1);
     return 0;
 }
 //------------------------------------------------------------------------------

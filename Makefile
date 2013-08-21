@@ -1,5 +1,5 @@
 CXX     = g++
-CFLAGS	= -Wall -g
+CFLAGS	= -g
 LDFLAGS	=
 LIBS    =
 TARGETS	= tty2gif
