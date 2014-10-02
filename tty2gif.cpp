@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
     pwd = argv[0];
 
     int delay = (argc==4)?atoi(argv[3]):0;
-    
+
     if(argc>=3 && file.Open(argv[1])==true) // convert mode
     {
         SaveReplay(argv[2],delay);
@@ -101,13 +101,13 @@ int main(int argc, char *argv[])
 
     int pid = fork();
     assert(pid>=0);
-    
+
     if(pid==0) // open a shell in child
     {
         assert(slave.Open(ptsname(master.Handle),O_RDWR)); // open slave
         assert(tcsetattr(slave.Handle,TCSANOW,&orgt)!=-1);
         assert(ioctl(slave.Handle,TIOCSWINSZ,&ws)!= -1);
- 
+
         // start a new session
         assert(setsid()!=-1);
         // redirect stdin/out/err to salver
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
         execlp(sh,sh,NULL);
         assert(1);
     }
-    
+
     assert(file.Open(argv[1],O_CREAT|O_WRONLY|O_TRUNC)); // open output
 
     char   buff[BUFLEN];
@@ -137,16 +137,16 @@ int main(int argc, char *argv[])
         FD_ZERO(&fds);
         FD_SET(STDIN_FILENO,&fds);
         FD_SET(master.Handle,&fds);
-        
+
         assert(select(master.Handle + 1,&fds,NULL,NULL,NULL)!=-1);
-        
+
         // stdin -> pty
         if(FD_ISSET(STDIN_FILENO,&fds))
         {
             num = read(STDIN_FILENO,buff,BUFLEN);
             if(num<=0)
                 break;
-            
+
             assert( write(master.Handle,buff,num) == num );
         }
         // pty -> stdout+file
@@ -157,11 +157,11 @@ int main(int argc, char *argv[])
                 break;
 
             assert( write(STDOUT_FILENO,buff,num) == num );
-            
+
             TCmdInfo info;
             gettimeofday(&info.tm,NULL);
             info.len  = num;
-            
+
             assert( write(file.Handle,&info,sizeof(TCmdInfo)) == sizeof(TCmdInfo) );
             assert( write(file.Handle,buff,num) == num );
          }
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 
     assert(file.Open(argv[1]));
     SaveReplay(argv[2],delay);
-    
+
     return 0;
 }
 //------------------------------------------------------------------------------
@@ -187,7 +187,7 @@ using namespace Magick;
 void SaveReplay(const char *fileName, int delay)
 {
     assert(file.Handle);
-    
+
     // clean screen
     fprintf(stdout,"\e[1;1H\e[2J");
     fflush(stdout);
@@ -210,10 +210,10 @@ void SaveReplay(const char *fileName, int delay)
         num = read(file.Handle,&cur,sizeof(TCmdInfo));
         if(num<=0)
             break;
-        
+
         assert( num == sizeof(TCmdInfo) );
         assert(cur.len);
-        
+
         num = read(file.Handle,buff,cur.len);
         assert( num == cur.len );
 
@@ -230,8 +230,11 @@ void SaveReplay(const char *fileName, int delay)
         prev = cur;
         frame.push_back(im);
     }
-    
+
     assert(frame.size()>0);
-    writeImages(frame.begin(),frame.end(),fileName);
+
+    vector<Image> opt;
+    optimizeImageLayers(&opt,frame.begin(),frame.end());
+    writeImages(opt.begin(),opt.end(),fileName);
 }
 //------------------------------------------------------------------------------
