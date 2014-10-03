@@ -1,7 +1,7 @@
 # Intro #
 
 `tty2gif` let you record scripts and their outputs into both binary and
-gif formats.  
+gif formats.
 
 Just like the original `script`, `tty2gif` first pomp up a temporary
 shell where you can type in your shell commands. Meanwhile, `tty2gif`
@@ -30,14 +30,15 @@ The `script` function part is inspired by the code in the book:
 $ ./tty2gif file.raw [out.gif] [delay(ms)]
 ```
 
-file.raw: output binary file name `OR` an exist binary script  
-out.gif: output gif animation file name  
+file.raw: output binary file name `OR` an exist binary script
+out.gif: output gif animation file name
 delay: change speed in milliseconds for gif, e.x., +10 or -10
 
 # Install #
 
-`tty2gif` depends on the Magick++ library.  
-After that, just `make`
+`tty2gif` depends on the Magick++ library. If you need to optimize the output
+gif (since v0.2), you have to have ImageMagick >= 6.8.6-4. After that, just
+`make`
 
 # Demo #
 
