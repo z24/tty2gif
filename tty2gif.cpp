@@ -181,8 +181,19 @@ int main(int argc, char *argv[])
 //------------------------------------------------------------------------------
 #include <vector>
 #include <Magick++.h>
+#include <X11/Xlib.h>
 using namespace std;
 using namespace Magick;
+//------------------------------------------------------------------------------
+Window GetWindowID()
+{
+    Display *dpy = XOpenDisplay(NULL);
+    assert(dpy);
+    Window window;
+    int revert;
+    XGetInputFocus(dpy,&window,&revert);
+    return window;
+}
 //------------------------------------------------------------------------------
 void SaveReplay(const char *fileName, int delay)
 {
@@ -199,9 +210,7 @@ void SaveReplay(const char *fileName, int delay)
     char str[BUFLEN];
     TCmdInfo prev,cur;
 
-    const char *wid = getenv("WINDOWID");
-    assert(wid && *wid);
-    sprintf(str,"x:%s",wid);
+    sprintf(str,"x:0x%lx",GetWindowID());
 
     vector<Image> frame;
 
