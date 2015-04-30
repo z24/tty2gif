@@ -35,14 +35,15 @@ out.gif: output gif animation file name
 delay: change speed in milliseconds for gif, e.x., +10 or -10
 
 For Mac users, if you want to produce gif files, you have to run `tty2gif` under
-a `xterm` since we use X window to compose the animation.
+a `xterm` since we use X window to compose the animation. Also make sure
+installed ImageMagick package has been built with X11 support, for example,
+through `brew install imagemagick --with-x11`.
 
 # Install #
 
-`tty2gif` depends on the Magick++ library. Mac users can install it through
-[macports](https://www.macports.org/ports.php?by=name&substr=imagemagick). If
-you need to optimize the output gif (since v0.2), you have to have ImageMagick
->= 6.8.6-4. After that, just `make`
+`tty2gif` depends on the Magick++ library. If you need to optimize the output
+gif (since v0.2), you have to have ImageMagick>= 6.8.6-4. After that, just
+`make`
 
 # Demo #
 

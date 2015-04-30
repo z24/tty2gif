@@ -6,7 +6,7 @@ TARGETS	= tty2gif
 UNAME	= $(shell uname -s)
 ifeq ($(UNAME), Darwin)
 	CXX     = clang++
-	CFLAGS += -I/opt/X11/include
+	CFLAGS += -I/opt/X11/include -L/opt/X11/lib
 endif
 
 tty2gif: tty2gif.cpp
