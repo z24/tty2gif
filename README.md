@@ -48,7 +48,3 @@ gif (since v0.2), you have to have ImageMagick>= 6.8.6-4. After that, just
 # Demo #
 
 ![gif](http://i.imgur.com/kjoNrBT.gif)
-
-# Contact #
-
-Youjie Zhou // [z24.me](http://z24.me)
